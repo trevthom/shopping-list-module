@@ -5,7 +5,7 @@
   const root = document.querySelector('[data-shopping-list]');
   if (!root) return;
 
-  const base = root.dataset.base || '/shopping-list';
+  const base = (root.dataset.base || '/shopping-list').replace(/\/+$/, '');
   const storesEl = root.querySelector('[data-stores]');
   const undoBar = document.getElementById('sl-undo');
   const undoName = document.getElementById('sl-undo-name');
@@ -210,19 +210,9 @@
 
     let drag = null;
 
-    handle.addEventListener('pointerdown', (event) => {
-      if (event.pointerType === 'mouse' && event.button !== 0) return;
-      event.preventDefault();
-      drag = { id: event.pointerId, startY: event.clientY, moved: false };
-      card.classList.add('is-dragging');
-      try {
-        handle.setPointerCapture(event.pointerId);
-      } catch (error) {
-        /* Pointer capture is a nicety; the drag still works without it. */
-      }
-    });
-
-    handle.addEventListener('pointermove', (event) => {
+    // Track the pointer on the window: moving the card in the list drops any
+    // pointer capture on its handle, so the handle would stop hearing moves.
+    const onMove = (event) => {
       if (!drag || event.pointerId !== drag.id) return;
       if (!drag.moved) {
         if (Math.abs(event.clientY - drag.startY) < 4) return;
@@ -240,27 +230,35 @@
           break;
         }
       }
-      if (reference) storesEl.insertBefore(card, reference);
-      else storesEl.appendChild(card);
-    });
+      if (reference) {
+        if (card.nextElementSibling !== reference) {
+          storesEl.insertBefore(card, reference);
+        }
+      } else if (card !== storesEl.lastElementChild) {
+        storesEl.appendChild(card);
+      }
+    };
 
     const finish = (event) => {
       if (!drag || event.pointerId !== drag.id) return;
       const moved = drag.moved;
       drag = null;
       card.classList.remove('is-dragging', 'is-lifted');
-      try {
-        if (handle.hasPointerCapture(event.pointerId)) {
-          handle.releasePointerCapture(event.pointerId);
-        }
-      } catch (error) {
-        /* ignore */
-      }
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', finish);
+      window.removeEventListener('pointercancel', finish);
       if (moved) saveOrder();
     };
 
-    handle.addEventListener('pointerup', finish);
-    handle.addEventListener('pointercancel', finish);
+    handle.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      event.preventDefault();
+      drag = { id: event.pointerId, startY: event.clientY, moved: false };
+      card.classList.add('is-dragging');
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', finish);
+      window.addEventListener('pointercancel', finish);
+    });
 
     handle.addEventListener('keydown', (event) => {
       if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;

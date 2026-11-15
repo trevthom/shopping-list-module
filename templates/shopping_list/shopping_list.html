@@ -6,7 +6,7 @@
 {% block body_class %}app-body{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" href="{{ url_for('shopping_list.static', filename='shopping_list.css') }}">
+  <link rel="stylesheet" href="{{ url_for('shopping_list.static', filename='shopping_list.css', v='1') }}">
 {% endblock %}
 
 {% block content %}
@@ -163,5 +163,5 @@
 {% endblock %}
 
 {% block scripts %}
-  <script src="{{ url_for('shopping_list.static', filename='shopping_list.js') }}" defer></script>
+  <script src="{{ url_for('shopping_list.static', filename='shopping_list.js', v='1') }}" defer></script>
 {% endblock %}
