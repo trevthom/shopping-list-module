@@ -1,0 +1,10 @@
+{
+  "id": "shopping_list_module",
+  "name": "Shopping List",
+  "route": "/shopping-list",
+  "icon": "shopping-cart",
+  "description": "What to pick up, sorted by store.",
+  "accent": "#B58A45",
+  "order": 2,
+  "enabled": true
+}
