@@ -185,6 +185,8 @@
       undoStack.pop();
 
       entry.row.classList.remove('is-checking', 'is-removing');
+      const button = entry.row.querySelector('.sl-item');
+      if (button) delete button.dataset.busy;
       if (entry.row.parentElement !== entry.list) {
         const reference = entry.list.children[entry.index] || null;
         if (reference) entry.list.insertBefore(entry.row, reference);
